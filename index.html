@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Will You Be My Valentine?</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Will You Be My Valentine?</title>
     <style>
         /* 1. RESET & BASIC STYLES */
         * {
@@ -15,29 +16,32 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh; /* changed to min-height for better mobile scrolling */
-            background-color: #ffe6e6;
+            min-height: 100vh;
+            background-color: #ffe6e6; /* Soft pink background */
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
             flex-direction: column;
-            overflow: hidden; /* Prevents scrollbars when button grows */
+            overflow: hidden;
+            width: 100%; /* Ensure body takes full width */
         }
 
         /* 2. TYPOGRAPHY */
         h1 {
             color: #ff4d4d;
-            font-size: clamp(1.5rem, 5vw, 3rem); /* Responsive font size */
-            margin: 20px 0;
+            font-size: clamp(1.5rem, 5vw, 3rem);
+            margin: 10px 0 20px 0; 
             max-width: 90%;
             line-height: 1.2;
             z-index: 5;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
 
-        /* 3. IMAGE CONTAINER (Fixed size to prevent jumping) */
+        /* 3. IMAGE CONTAINER */
         .gif-container {
             width: 250px;
             height: 250px;
-            margin-bottom: 20px;
+            /* UPDATED: Reduced bottom margin to 10px */
+            margin: 0 auto 10px auto; 
             display: flex;
             justify-content: center;
             align-items: center;
@@ -50,6 +54,8 @@
             border-radius: 15px;
             object-fit: contain;
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            display: block; 
+            margin: auto;
         }
 
         /* 4. BUTTONS */
@@ -58,9 +64,11 @@
             gap: 20px;
             align-items: center;
             justify-content: center;
-            flex-wrap: wrap; /* Allows buttons to stack on small screens */
+            flex-wrap: wrap; 
             position: relative;
             z-index: 10;
+            margin: 0 auto; /* Ensure button container is centered */
+            max-width: 100%;
         }
 
         button {
@@ -69,17 +77,16 @@
             border: none;
             border-radius: 50px;
             cursor: pointer;
-            transition: all 0.1s ease; /* Faster transition for snappier feel */
+            transition: all 0.1s ease;
             font-weight: bold;
-            white-space: nowrap; /* Keeps text on one line */
+            white-space: nowrap; 
         }
 
         #yesBtn {
             background-color: #28a745;
             color: white;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            /* Important: z-index ensures it eventually covers the No button */
-            z-index: 100; 
+            z-index: 100; /* Stays on top */
         }
 
         #noBtn {
@@ -100,12 +107,21 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 9999; /* Covers everything */
+            z-index: 9999;
         }
         
+        /* Removes extra space below the kissing bear */
+        #success-message .gif-container {
+            margin-bottom: 0; 
+        }
+
+        /* Forces the "Yay" text to sit tight under the bear */
         #success-message h1 {
-            font-size: 3rem;
+            font-size: 2.5rem;
             animation: popIn 0.5s ease-out;
+            padding: 0 20px;
+            margin-top: 10px; 
+            margin-bottom: 0;
         }
 
         @keyframes popIn {
@@ -122,19 +138,19 @@
 
     <div id="preload"></div>
 
-    <div id="question-container">
+    <div id="question-container" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
         <div class="gif-container">
             <img id="mainGif" 
-                 src="https://media.tenor.com/KiWuX4WdE_gAAAAi/mocha-mochi.gif" 
-                 alt="Cute Bear"
+                 src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZHRmOHJxMnk1ZXZkOWhsOTdxZzVqbjhjNGRwOTY1MDNhdnkzYWsxcCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/wvYNSqBAMDVx8CEYkt/giphy.gif" 
+                 alt="Cute Valentine Bear"
                  onerror="this.src='https://media.tenor.com/Ko2Rf_Xn0W0AAAAi/cute-bear.gif'">
         </div>
         
         <h1 id="mainText">Will you be my Valentine? 🌹</h1>
         
         <div class="buttons">
-            <button id="yesBtn" onclick="acceptLove()">Yes</button>
-            <button id="noBtn" onclick="refuseLove()">No</button>
+            <button id="yesBtn" onclick="acceptLove()">Yes 💖</button>
+            <button id="noBtn" onclick="refuseLove()">No 💔</button>
         </div>
     </div>
 
@@ -148,95 +164,92 @@
     <script>
         // --- CONFIGURATION ---
         const config = {
-            // How much the button grows per click (in pixels)
-            growthRate: 20, 
-            // Fallback image if any link breaks
+            growthRate: 20, // Pixels to grow per click
             fallbackImage: "https://media.tenor.com/Ko2Rf_Xn0W0AAAAi/cute-bear.gif"
         };
 
-        // --- CONTENT DATA ---
-        // EXACTLY 16 Phrases and 16 GIFs matched 1:1
+        // --- ENGLISH PHRASES (16 Items) ---
         const phrases = [
-            "No",
-            "Are you sure?",
-            "Really sure?",
-            "Think again!",
-            "Last chance!",
-            "Surely not?",
-            "You might regret this!",
-            "Give it another thought!",
-            "Are you absolutely certain?",
-            "This could be a mistake!",
-            "Have a heart!",
-            "Don't be so cold!",
-            "Change of heart?",
-            "Wouldn't you reconsider?",
-            "Is that your final answer?",
-            "You're breaking my heart ;("
+            "No 💔",                    // 1
+            "Are you sure?",            // 2
+            "Really sure?",             // 3
+            "Think again!",             // 4
+            "Last chance!",             // 5
+            "Surely not?",              // 6
+            "You might regret this!",   // 7
+            "Give it another thought!", // 8
+            "Are you absolutely certain?", // 9
+            "This could be a mistake!", // 10
+            "Have a heart!",            // 11
+            "Don't be so cold!",        // 12
+            "Change of heart?",         // 13
+            "Wouldn't you reconsider?", // 14
+            "Is that your final answer?", // 15
+            "You're breaking my heart ;(" // 16
         ];
 
+        // --- YOUR CUSTOM GIF LINKS (Mixed to Total 16) ---
+        // Kept exactly as you provided in your last update
         const imageUrls = [
-            // 1. Shocked (Giphy)
-            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2Q.../giphy.gif", 
+            // 1. Cute/Impress (Puss in Boots Eyes)
+            "https://media.giphy.com/media/3o6wrvdHFbwBrUFenu/giphy.gif",
             
-            // 2. Sad Staring (Tenor)
-            "https://media.tenor.com/4k7sYk_C7NAAAAAj/bear-sad.gif",      
+            // 2. Sad (Peach Goma Sad)
+            "https://media.tenor.com/ivKWdfdbV3EAAAAi/goma-peach.gif",
             
-            // 3. Crying Cat (Giphy)
-            "https://media.giphy.com/media/3o6wrvdHFbwBrUFenu/giphy.gif",    
+            // 3. Cute/Impress (Bear with Heart)
+            "https://media.giphy.com/media/L95W4wv8nnb9K/giphy.gif",
             
-            // 4. Sad Sitting (Tenor)
-            "https://media.tenor.com/ivKWdfdbV3EAAAAi/goma-peach.gif",     
+            // 4. Sad (Pikachu Crying)
+            "https://media.tenor.com/f1xnRxTRxLAAAAAj/bear-kuma-bear.gif",
             
-            // 5. Crying Hard (Giphy)
-            "https://media.giphy.com/media/OPU6wzx8J92NO/giphy.gif", 
+            // 5. Cute/Impress (Minions Cheering)
+            "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3eDhjYzV0eW1yczJhd2NhNm1yYmdnNWkyZmV4NnExczV4b28xNmRsaSZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/BLJy2x6QwzgdrCfAlD/giphy.gif",
             
-            // 6. Crying Pool (Tenor)
-            "https://media.tenor.com/62tW3QyV-zAAAAAj/cat-crying.gif",     
+            // 6. Sad (SpongeBob Crying)
+            "https://media.giphy.com/media/7SF5scGB2AFrgsXP63/giphy.gif",
             
-            // 7. Wiping Tears (Giphy - Pikachu)
-            "https://media.giphy.com/media/L95W4wv8nnb9K/giphy.gif",       
+            // 7. Sad (Anime Crying)
+            "https://media.giphy.com/media/9Y5BbDSkSTiY8/giphy.gif",
             
-            // 8. Sad Eyes (Tenor)
-            "https://media.tenor.com/VpL_iFvTjykAAAAj/sad-cat.gif",        
+            // 8. Cute/Impress (Puss in Boots - Repeat)
+            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMWVydmx3dGNhb3lqY293dXR4ZGdmdjZpeWh2emsyZHp1c3ZvMGpibCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/9QrNWBKvBpCw0/giphy.gif",
             
-            // 9. Handkerchief (Giphy)
-            "https://media.giphy.com/media/mvRk6rI1k6tfa/giphy.gif",     
+            // 9. Cute/Impress (Bear with Heart - Repeat)
+            "https://media.tenor.com/ivKWdfdbV3EAAAAi/goma-peach.gif",
             
-            // 10. Head Down (Tenor)
-            "https://media.tenor.com/M11YN8K34MQAAAAj/sad-cute.gif",       
+            // 10. Sad (Dramatic Crying Man)
+            "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3dzJpczVwbno1eHNhbmp2dWZzNHhkY3Uya2xvcXd5eDFiem9ocnZiMSZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/l1KVaj5UcbHwrBMqI/giphy.gif",
             
-            // 11. Devastated (Giphy)
-            "https://media.giphy.com/media/d2lcHJPG5BTmmtS/giphy.gif",        
+            // 11. Cute/Impress (Minions Cheering - Repeat)
+            "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3eDhjYzV0eW1yczJhd2NhNm1yYmdnNWkyZmV4NnExczV4b28xNmRsaSZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/BLJy2x6QwzgdrCfAlD/giphy.gif",
             
-            // 12. Rain Cloud (Tenor)
-            "https://media.tenor.com/7gK8e73l5W4AAAAj/sad-anime.gif",      
+            // 12. Sad (Crying Kid Meme)
+            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcThrMzN4ZHo2ZHUyaDA3c3dlNnYzbGNkMGxibmVjeGcwMmJ3dWJkdiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/jLZRtuUCQY3WcgGRak/giphy.gif",
             
-            // 13. Poking Floor (Giphy)
-            "https://media.giphy.com/media/7SF5scGB2AFrgsXP63/giphy.gif",       
+            // 13. Cute/Impress (Puss in Boots - Repeat)
+            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcTFhNXNubng5b2Z2amtmZmhhYjBmeTR3Y25wemk4a24wN3VicXhraiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/vYEL7SEwOcmJ2/giphy.gif",
             
-            // 14. Corner Sulk (Tenor)
-            "https://media.tenor.com/k6gA2sgVjXkAAAAj/sad-bear.gif",       
+            // 14. Sad (Peach Goma Sad - Repeat)
+            "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOGxqOHRtdzZyaGlhbXRtZm4xNWtkcTk1OXk0ajU5a2d5NnhycGNjdyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/VoRnF8sxWuTLO/giphy.gif",
             
-            // 15. Giving Up (Giphy)
-            "https://media.giphy.com/media/l2JhrhAtnJSDNJ2py/giphy.gif",        
+            // 15. Cute/Impress (Bear with Heart - Repeat)
+            "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3M2VweTJ5M2Vvcmg1bnRvOW9haGNpMzBzdmpmd2I0b2JrbjlwbnhkcyZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/jnQYWZ0T4mkhCmkzcn/giphy.gif",
             
-            // 16. Ultimate Sadness (Tenor)
-            "https://media.tenor.com/rM1s158lT80AAAAj/sad-cat-crying.gif"  
+            // 16. Sad (Pikachu Crying - Repeat)
+            "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3a253bWh1dzltYTJlMDF1MWdza29nNXJld3E1Zm82c3d4Ymcwa2gxdiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/13AXYJh2jDt2IE/giphy.gif"
         ];
 
         // --- STATE MANAGEMENT ---
         let count = 0;
 
-        // --- PRELOADER ---
-        // Immediately load all images into the hidden div so they are ready
+        // --- PRELOADER (Runs immediately) ---
         (function preloadImages() {
             const preloadContainer = document.getElementById('preload');
             imageUrls.forEach((url) => {
                 const img = document.createElement('img');
                 img.src = url;
-                // If a specific image fails, ignore it to prevent console errors
-                img.onerror = function() { console.log("Failed to preload: " + url); }; 
+                img.onerror = function() { console.log("Skipping broken link: " + url); }; 
                 preloadContainer.appendChild(img);
             });
         })();
@@ -250,22 +263,16 @@
             // 1. Increment Count
             count++;
 
-            // 2. Logic to stay within array bounds
-            // Math.min ensures we never go past the last item in the list
+            // 2. Get safe index
             const index = Math.min(count, phrases.length - 1);
 
-            // 3. Update Text
+            // 3. Update Text (English)
             noBtn.innerText = phrases[index];
 
-            // 4. Update Image with Error Handling
-            const newImageSrc = imageUrls[index];
-            mainGif.src = newImageSrc;
-            mainGif.onerror = function() { 
-                this.src = config.fallbackImage; // Switch to backup if broken
-            };
+            // 4. Update Image
+            mainGif.src = imageUrls[index];
 
-            // 5. Grow Yes Button (Robust calculation)
-            // getting computed style is safer than inline styles for the first click
+            // 5. Grow Yes Button
             const style = window.getComputedStyle(yesBtn);
             const currentSize = parseFloat(style.fontSize);
             const currentPadding = parseFloat(style.paddingTop);
@@ -278,14 +285,10 @@
             const success = document.getElementById("success-message");
             const question = document.getElementById("question-container");
             
-            // Hide Question, Show Success
             question.style.display = "none";
             success.style.display = "flex";
-            
-            // Background change
             document.body.style.backgroundColor = "#ffcccc";
         }
     </script>
 </body>
 </html>
-
