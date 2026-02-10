@@ -2,57 +2,84 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Will You Be My Valentine?</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Will You Be My Valentine?</title>
     <style>
+        /* 1. RESET & BASIC STYLES */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            background-color: #ffe6e6; /* Soft pink background */
-            font-family: 'Arial', sans-serif;
+            min-height: 100vh; /* changed to min-height for better mobile scrolling */
+            background-color: #ffe6e6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
             flex-direction: column;
-            overflow: hidden;
-            margin: 0;
+            overflow: hidden; /* Prevents scrollbars when button grows */
         }
 
+        /* 2. TYPOGRAPHY */
         h1 {
             color: #ff4d4d;
-            font-size: 3rem;
+            font-size: clamp(1.5rem, 5vw, 3rem); /* Responsive font size */
+            margin: 20px 0;
+            max-width: 90%;
+            line-height: 1.2;
+            z-index: 5;
+        }
+
+        /* 3. IMAGE CONTAINER (Fixed size to prevent jumping) */
+        .gif-container {
+            width: 250px;
+            height: 250px;
             margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
         }
 
         .gif-container img {
-            width: 200px;
-            height: 200px; /* Fixed height to prevent jumping */
-            object-fit: cover;
-            border-radius: 10px;
-            margin-bottom: 20px;
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 15px;
+            object-fit: contain;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
 
+        /* 4. BUTTONS */
         .buttons {
             display: flex;
             gap: 20px;
             align-items: center;
             justify-content: center;
-            flex-wrap: wrap; /* Allows buttons to wrap on small screens */
+            flex-wrap: wrap; /* Allows buttons to stack on small screens */
+            position: relative;
+            z-index: 10;
         }
 
         button {
             padding: 15px 30px;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             border: none;
             border-radius: 50px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.1s ease; /* Faster transition for snappier feel */
+            font-weight: bold;
+            white-space: nowrap; /* Keeps text on one line */
         }
 
         #yesBtn {
             background-color: #28a745;
             color: white;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            /* Important: z-index ensures it eventually covers the No button */
+            z-index: 100; 
         }
 
         #noBtn {
@@ -61,21 +88,50 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        /* Success Message styling */
+        /* 5. SUCCESS STATE */
         #success-message {
             display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #ffcccc;
             flex-direction: column;
+            justify-content: center;
             align-items: center;
+            z-index: 9999; /* Covers everything */
         }
+        
+        #success-message h1 {
+            font-size: 3rem;
+            animation: popIn 0.5s ease-out;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Hidden area to preload images */
+        #preload { width: 0; height: 0; overflow: hidden; position: absolute; }
     </style>
 </head>
 <body>
 
+    <div id="preload"></div>
+
     <div id="question-container">
         <div class="gif-container">
-            <img id="valentineGif" src="https://media.tenor.com/KiWuX4WdE_gAAAAi/mocha-mochi.gif" alt="Cute Bear">
+            <img id="mainGif" 
+                 src="https://media.tenor.com/KiWuX4WdE_gAAAAi/mocha-mochi.gif" 
+                 alt="Cute Bear"
+                 onerror="this.src='https://media.tenor.com/Ko2Rf_Xn0W0AAAAi/cute-bear.gif'">
         </div>
-        <h1>Will you be my Valentine? 🌹</h1>
+        
+        <h1 id="mainText">Will you be my Valentine? 🌹</h1>
+        
         <div class="buttons">
             <button id="yesBtn" onclick="acceptLove()">Yes</button>
             <button id="noBtn" onclick="refuseLove()">No</button>
@@ -90,17 +146,17 @@
     </div>
 
     <script>
-        let noClickCount = 0;
+        // --- CONFIGURATION ---
+        const config = {
+            // How much the button grows per click (in pixels)
+            growthRate: 20, 
+            // Fallback image if any link breaks
+            fallbackImage: "https://media.tenor.com/Ko2Rf_Xn0W0AAAAi/cute-bear.gif"
+        };
 
-        // List of sad gifs to cycle through
-        const sadGifs = [
-            "https://media.tenor.com/f1xnRxTRxLAAAAAj/bear-kuma-bear.gif", // Crying bear
-            "https://media.tenor.com/PWA0X01eJpMAAAAj/cat-weeping.gif", // Crying cat
-            "https://media.tenor.com/ivKWdfdbV3EAAAAi/goma-peach.gif", // Sad sitting
-            "https://media.tenor.com/0f8G56WwOa0AAAAi/peach-goma-cry.gif" // Intense crying
-        ];
-
-        const noPhrases = [
+        // --- CONTENT DATA ---
+        // EXACTLY 16 Phrases and 16 GIFs matched 1:1
+        const phrases = [
             "No",
             "Are you sure?",
             "Really sure?",
@@ -119,42 +175,85 @@
             "You're breaking my heart ;("
         ];
 
+        const imageUrls = [
+            "https://media.tenor.com/f1xnRxTRxLAAAAAj/bear-kuma-bear.gif", // 1
+            "https://media.tenor.com/4k7sYk_C7NAAAAAj/bear-sad.gif",      // 2
+            "https://media.tenor.com/PWA0X01eJpMAAAAj/cat-weeping.gif",    // 3
+            "https://media.tenor.com/ivKWdfdbV3EAAAAi/goma-peach.gif",     // 4
+            "https://media.tenor.com/0f8G56WwOa0AAAAi/peach-goma-cry.gif", // 5
+            "https://media.tenor.com/62tW3QyV-zAAAAAj/cat-crying.gif",     // 6
+            "https://media.tenor.com/w1-p1sM4gY4AAAAj/cute-sad.gif",       // 7
+            "https://media.tenor.com/VpL_iFvTjykAAAAj/sad-cat.gif",        // 8
+            "https://media.tenor.com/o1d6vXqFhLAAAAAj/crying-sad.gif",     // 9
+            "https://media.tenor.com/M11YN8K34MQAAAAj/sad-cute.gif",       // 10
+            "https://media.tenor.com/W2lVpZ9X3Z0AAAAj/sad-cry.gif",        // 11
+            "https://media.tenor.com/7gK8e73l5W4AAAAj/sad-anime.gif",      // 12
+            "https://media.tenor.com/J_e15C4CqZcAAAAj/sad-poke.gif",       // 13
+            "https://media.tenor.com/k6gA2sgVjXkAAAAj/sad-bear.gif",       // 14
+            "https://media.tenor.com/l5_u4J0X3X4AAAAj/sad-cat.gif",        // 15
+            "https://media.tenor.com/rM1s158lT80AAAAj/sad-cat-crying.gif"  // 16
+        ];
+
+        // --- STATE MANAGEMENT ---
+        let count = 0;
+
+        // --- PRELOADER ---
+        // Immediately load all images into the hidden div so they are ready
+        (function preloadImages() {
+            const preloadContainer = document.getElementById('preload');
+            imageUrls.forEach((url) => {
+                const img = document.createElement('img');
+                img.src = url;
+                // If a specific image fails, ignore it to prevent console errors
+                img.onerror = function() { console.log("Failed to preload: " + url); }; 
+                preloadContainer.appendChild(img);
+            });
+        })();
+
+        // --- FUNCTIONS ---
         function refuseLove() {
             const yesBtn = document.getElementById("yesBtn");
             const noBtn = document.getElementById("noBtn");
-            const gifImage = document.getElementById("valentineGif");
+            const mainGif = document.getElementById("mainGif");
 
-            // Increase Yes button size
-            const currentFontSize = parseFloat(window.getComputedStyle(yesBtn).fontSize);
-            const currentPaddingTop = parseFloat(window.getComputedStyle(yesBtn).paddingTop);
-            const currentPaddingRight = parseFloat(window.getComputedStyle(yesBtn).paddingRight);
-            
-            yesBtn.style.fontSize = (currentFontSize + 10) + "px"; // Grow slower so it lasts longer
-            yesBtn.style.padding = (currentPaddingTop + 5) + "px " + (currentPaddingRight + 5) + "px";
+            // 1. Increment Count
+            count++;
 
-            // Update GIF to a sad one
-            if (noClickCount < sadGifs.length) {
-                gifImage.src = sadGifs[noClickCount];
-            } else {
-                // If we run out of sad gifs, keep showing the last one
-                gifImage.src = sadGifs[sadGifs.length - 1];
-            }
+            // 2. Logic to stay within array bounds
+            // Math.min ensures we never go past the last item in the list
+            const index = Math.min(count, phrases.length - 1);
 
-            // Change No button text
-            noClickCount++;
-            if (noClickCount < noPhrases.length) {
-                noBtn.innerText = noPhrases[noClickCount];
-            } else {
-                noBtn.innerText = noPhrases[noPhrases.length - 1];
-            }
+            // 3. Update Text
+            noBtn.innerText = phrases[index];
+
+            // 4. Update Image with Error Handling
+            const newImageSrc = imageUrls[index];
+            mainGif.src = newImageSrc;
+            mainGif.onerror = function() { 
+                this.src = config.fallbackImage; // Switch to backup if broken
+            };
+
+            // 5. Grow Yes Button (Robust calculation)
+            // getting computed style is safer than inline styles for the first click
+            const style = window.getComputedStyle(yesBtn);
+            const currentSize = parseFloat(style.fontSize);
+            const currentPadding = parseFloat(style.paddingTop);
+
+            yesBtn.style.fontSize = `${currentSize + config.growthRate}px`;
+            yesBtn.style.padding = `${currentPadding + 10}px ${currentPadding * 1.5}px`;
         }
 
         function acceptLove() {
-            document.getElementById("question-container").style.display = "none";
-            document.getElementById("success-message").style.display = "flex";
+            const success = document.getElementById("success-message");
+            const question = document.getElementById("question-container");
+            
+            // Hide Question, Show Success
+            question.style.display = "none";
+            success.style.display = "flex";
+            
+            // Background change
             document.body.style.backgroundColor = "#ffcccc";
         }
     </script>
-
 </body>
 </html>
