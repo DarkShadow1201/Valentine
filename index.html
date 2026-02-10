@@ -26,6 +26,8 @@
 
         .gif-container img {
             width: 200px;
+            height: 200px; /* Fixed height to prevent jumping */
+            object-fit: cover;
             border-radius: 10px;
             margin-bottom: 20px;
         }
@@ -34,6 +36,8 @@
             display: flex;
             gap: 20px;
             align-items: center;
+            justify-content: center;
+            flex-wrap: wrap; /* Allows buttons to wrap on small screens */
         }
 
         button {
@@ -69,7 +73,7 @@
 
     <div id="question-container">
         <div class="gif-container">
-            <img src="https://media.tenor.com/gUiu1zyxfzYAAAAi/bear-kiss-bear-kisses.gif" alt="Cute Bear">
+            <img id="valentineGif" src="https://media.tenor.com/KiWuX4WdE_gAAAAi/mocha-mochi.gif" alt="Cute Bear">
         </div>
         <h1>Will you be my Valentine? 🌹</h1>
         <div class="buttons">
@@ -87,6 +91,15 @@
 
     <script>
         let noClickCount = 0;
+
+        // List of sad gifs to cycle through
+        const sadGifs = [
+            "https://media.tenor.com/f1xnRxTRxLAAAAAj/bear-kuma-bear.gif", // Crying bear
+            "https://media.tenor.com/PWA0X01eJpMAAAAj/cat-weeping.gif", // Crying cat
+            "https://media.tenor.com/ivKWdfdbV3EAAAAi/goma-peach.gif", // Sad sitting
+            "https://media.tenor.com/0f8G56WwOa0AAAAi/peach-goma-cry.gif" // Intense crying
+        ];
+
         const noPhrases = [
             "No",
             "Are you sure?",
@@ -109,12 +122,23 @@
         function refuseLove() {
             const yesBtn = document.getElementById("yesBtn");
             const noBtn = document.getElementById("noBtn");
+            const gifImage = document.getElementById("valentineGif");
 
             // Increase Yes button size
-            const currentSize = parseFloat(window.getComputedStyle(yesBtn).fontSize);
-            yesBtn.style.fontSize = (currentSize + 20) + "px";
-            yesBtn.style.padding = (parseFloat(window.getComputedStyle(yesBtn).paddingTop) + 10) + "px " + 
-                                   (parseFloat(window.getComputedStyle(yesBtn).paddingRight) + 10) + "px";
+            const currentFontSize = parseFloat(window.getComputedStyle(yesBtn).fontSize);
+            const currentPaddingTop = parseFloat(window.getComputedStyle(yesBtn).paddingTop);
+            const currentPaddingRight = parseFloat(window.getComputedStyle(yesBtn).paddingRight);
+            
+            yesBtn.style.fontSize = (currentFontSize + 10) + "px"; // Grow slower so it lasts longer
+            yesBtn.style.padding = (currentPaddingTop + 5) + "px " + (currentPaddingRight + 5) + "px";
+
+            // Update GIF to a sad one
+            if (noClickCount < sadGifs.length) {
+                gifImage.src = sadGifs[noClickCount];
+            } else {
+                // If we run out of sad gifs, keep showing the last one
+                gifImage.src = sadGifs[sadGifs.length - 1];
+            }
 
             // Change No button text
             noClickCount++;
@@ -128,8 +152,6 @@
         function acceptLove() {
             document.getElementById("question-container").style.display = "none";
             document.getElementById("success-message").style.display = "flex";
-            
-            // Optional: Launch confetti or play music here
             document.body.style.backgroundColor = "#ffcccc";
         }
     </script>
